@@ -17,7 +17,8 @@ And, The following problem was solved. **[#15062](https://github.com/tensorflow/
 |:--|:--|:--|:--|:--|:--|
 |RaspberryPi3/4|Raspbian/Debian|Stretch|armhf / armv7l|3.5.3|32bit, glibc2.24|
 |RaspberryPi3/4|Raspbian/Debian|Buster|armhf / armv7l|3.7.3 / 2.7.16|32bit, glibc2.28|
-|RaspberryPi3/4|Debian|Buster|aarch64 / armv8|3.7.3|64bit, glibc2.28|
+|RaspberryPi3/4|RaspberryPiOS/Debian|Buster|aarch64 / armv8|3.7.3|64bit, glibc2.28|
+|RaspberryPi3/4|Ubuntu 20.04|Focal|aarch64 / armv8|3.8.2|64bit, glibc2.31|
 
 Minimal configuration stand-alone installer for Tensorflow Lite.  
 **https://github.com/PINTO0309/TensorflowLite-bin.git**
@@ -57,11 +58,12 @@ Prebuilt binary for Jetson Nano by **`Michael`**.
 |tensorflow-1.15.0-cp37-cp37m-linux_aarch64.whl|○|Debian Buster, glibc 2.28|
 
 **Python 3.x + Tensorflow v2**  
-
-|.whl|4Threads|Note|
-|:--|:--:|:--|
-|tensorflow-2.2.0-cp37-cp37m-linux_armv7l.whl|○|Raspbian/Debian Buster, glibc 2.28|
-|tensorflow-2.2.0-cp37-cp37m-linux_aarch64.whl|○|Debian Buster, glibc 2.28|
+\*4T = 4 Threads, \*\*FD = FlexDelegate, \*\*\*XP = XNNPACK
+|.whl|4T|FD|XP|Note|
+|:--|:--:|:--:|:--:|:--|
+|tensorflow-2.3.1-cp37-none-linux_armv7l.whl|○|○|○|Raspbian/Debian Buster, glibc 2.28|
+|tensorflow-2.3.1-cp37-cp37m-linux_aarch64.whl|○|○|○|RaspberryPiOS/Debian Buster, glibc 2.28|
+|tensorflow-2.3.1-cp38-none-linux_aarch64.whl|○|○|○|Ubuntu 20.04 Focal, glibc 2.31|
 
 **【Appendix】 C Library + Tensorflow v1.x.x / v2.x.x**  
 The behavior is unconfirmed because I do not have C language implementation skills.  
@@ -80,7 +82,7 @@ $ ./install-buster.sh
 |v1.15.0|C-library/1.15.0-armhf/install-buster.sh|Raspbian/Debian Buster, glibc 2.28|
 |v1.15.0|C-library/1.15.0-aarch64/install-buster.sh|Raspbian/Debian Buster, glibc 2.28|
 |v2.2.0|C-library/2.2.0-armhf/install-buster.sh|Raspbian/Debian Buster, glibc 2.28|
-|v2.2.0|C-library/2.2.0-aarch64/install-buster.sh|Raspbian/Debian Buster, glibc 2.28|
+|v2.3.0|C-library/2.3.0-aarch64/install-buster.sh|RaspberryPiOS/Raspbian/Debian Buster, glibc 2.28|
 
 ## Usage
 **Example of Python 3.x + Tensorflow v1 series**
@@ -94,7 +96,8 @@ $ sudo pip3 install h5py==2.9.0
 $ sudo pip3 install pybind11
 $ pip3 install -U --user six wheel mock
 $ sudo pip3 uninstall tensorflow
-$ wget https://github.com/PINTO0309/Tensorflow-bin/raw/master/tensorflow-1.15.0-cp37-cp37m-linux_armv7l.whl
+$ wget "https://raw.githubusercontent.com/PINTO0309/Tensorflow-bin/master/tensorflow-1.15.0-cp37-cp37m-linux_armv7l_download.sh"
+$ ./tensorflow-1.15.0-cp37-cp37m-linux_armv7l_download.sh
 $ sudo pip3 install tensorflow-1.15.0-cp37-cp37m-linux_armv7l.whl
 
 【Required】 Restart the terminal.
@@ -109,10 +112,10 @@ $ sudo pip3 install keras_preprocessing==1.1.0 --no-deps
 $ sudo pip3 install h5py==2.9.0
 $ sudo pip3 install pybind11
 $ pip3 install -U --user six wheel mock
-$ wget https://github.com/PINTO0309/Tensorflow-bin/blob/master/tensorflow-2.2.0-cp37-cp37m-linux_armv7l_download.sh
-$ ./tensorflow-2.2.0-cp37-cp37m-linux_armv7l_download.sh
+$ wget "https://raw.githubusercontent.com/PINTO0309/Tensorflow-bin/master/tensorflow-2.3.1-cp37-none-linux_armv7l_download.sh"
+$ ./tensorflow-2.3.1-cp37-none-linux_armv7l_download.sh
 $ sudo pip3 uninstall tensorflow
-$ sudo -H pip3 install tensorflow-2.2.0-cp37-cp37m-linux_armv7l.whl
+$ sudo -H pip3 install tensorflow-2.3.1-cp37-none-linux_armv7l.whl
 
 【Required】 Restart the terminal.
 ```
@@ -174,7 +177,11 @@ if __name__ == "__main__":
   parser.add_argument("--num_threads", default=1, help="number of threads")
   args = parser.parse_args()
 
-  interpreter = interpreter_wrapper.Interpreter(model_path=args.model_file)
+  ### Tensorflow -v2.2.0
+  #interpreter = interpreter_wrapper.Interpreter(model_path=args.model_file)
+  ### Tensorflow v2.3.0+
+  interpreter = interpreter_wrapper.Interpreter(model_path=args.model_file, num_threads=int(args.num_threads))
+  
   interpreter.allocate_tensors()
   input_details = interpreter.get_input_details()
   output_details = interpreter.get_output_details()
@@ -191,7 +198,8 @@ if __name__ == "__main__":
   if floating_model:
     input_data = (np.float32(input_data) - args.input_mean) / args.input_std
 
-  interpreter.set_num_threads(int(args.num_threads))
+  ### Tensorflow -v2.2.0
+  #interpreter.set_num_threads(int(args.num_threads))
   interpreter.set_tensor(input_details[0]['index'], input_data)
 
   start_time = time.time()
@@ -5764,6 +5772,164 @@ $ sudo bazel --host_jvm_args=-Xmx512m build \
 
 </div></details>
 
+<details><summary>Tensorflow v2.3.0</summary><div>
+
+============================================================  
+  
+**Tensorflow v2.3.0-rc0 - Buster - Bazel 3.1.0**  
+
+============================================================  
+
+```bash
+$ sudo nano .tf_configure.bazelrc
+
+build --action_env PYTHON_BIN_PATH="/usr/bin/python3"
+build --action_env PYTHON_LIB_PATH="/usr/local/lib/python3.7/dist-packages"
+build --python_path="/usr/bin/python3"
+build --config=xla
+build:opt --copt=-march=native
+build:opt --copt=-Wno-sign-compare
+build:opt --host_copt=-march=native
+build:opt --define with_default_optimizations=true
+test --flaky_test_attempts=3
+test --test_size_filters=small,medium
+test:v1 --test_tag_filters=-benchmark-test,-no_oss,-gpu,-oss_serial
+test:v1 --build_tag_filters=-benchmark-test,-no_oss,-gpu
+test:v2 --test_tag_filters=-benchmark-test,-no_oss,-gpu,-oss_serial,-v1only
+test:v2 --build_tag_filters=-benchmark-test,-no_oss,-gpu,-v1only
+build --action_env TF_CONFIGURE_IOS="0"
+
+↓
+
+build --action_env PYTHON_BIN_PATH="/usr/bin/python3"
+build --action_env PYTHON_LIB_PATH="/usr/local/lib/python3.7/dist-packages"
+build --python_path="/usr/bin/python3"
+build:opt --copt=-march=native
+build:opt --copt=-Wno-sign-compare
+build:opt --host_copt=-march=native
+build:opt --define with_default_optimizations=true
+test --flaky_test_attempts=3
+test --test_size_filters=small,medium
+test:v1 --test_tag_filters=-benchmark-test,-no_oss,-gpu,-oss_serial
+test:v1 --build_tag_filters=-benchmark-test,-no_oss,-gpu
+test:v2 --test_tag_filters=-benchmark-test,-no_oss,-gpu,-oss_serial,-v1only
+test:v2 --build_tag_filters=-benchmark-test,-no_oss,-gpu,-v1only
+build --action_env TF_CONFIGURE_IOS="0"
+build --action_env TF_ENABLE_XLA="0"
+build --define with_xla_support=false
+```
+
+```bash
+$ wget https://gitlab.com/libeigen/eigen/-/archive/386d809bde475c65b7940f290efe80e6a05878c4/eigen-386d809bde475c65b7940f290efe80e6a05878c4.tar.gz
+$ nano tensorflow/workspace.bzl
+
+    tf_http_archive(
+        name = "eigen_archive",
+        build_file = clean_dep("//third_party:eigen.BUILD"),
+        patch_file = clean_dep("//third_party/eigen3:gpu_packet_math.patch"),
+        sha256 = "f632d82e43ffc46adfac9043beace700b0265748075e7edc0701d81380258038",  # SHARED_EIGEN_SHA
+        strip_prefix = "eigen-386d809bde475c65b7940f290efe80e6a05878c4",
+        urls = [
+            "https://storage.googleapis.com/mirror.tensorflow.org/gitlab.com/libeigen/eigen/-/archive/386d809bde475c65b7940f290efe80e6a05878c4/eigen-386d809bde475c65b7940f290efe80e6a05878c4.tar.gz",
+            "https://gitlab.com/libeigen/eigen/-/archive/386d809bde475c65b7940f290efe80e6a05878c4/eigen-386d809bde475c65b7940f290efe80e6a05878c4.tar.gz",
+        ],
+    )
+↓
+    tf_http_archive(
+        name = "eigen_archive",
+        build_file = clean_dep("//third_party:eigen.BUILD"),
+        patch_file = clean_dep("//third_party/eigen3:gpu_packet_math.patch"),
+        sha256 = "f632d82e43ffc46adfac9043beace700b0265748075e7edc0701d81380258038",  # SHARED_EIGEN_SHA
+        strip_prefix = "eigen-386d809bde475c65b7940f290efe80e6a05878c4",
+        urls = [
+	    "file:///home/pi/tensorflow/eigen-386d809bde475c65b7940f290efe80e6a05878c4.tar.gz",
+            "https://storage.googleapis.com/mirror.tensorflow.org/gitlab.com/libeigen/eigen/-/archive/386d809bde475c65b7940f290efe80e6a05878c4/eigen-386d809bde475c65b7940f290efe80e6a05878c4.tar.gz",
+            "https://gitlab.com/libeigen/eigen/-/archive/386d809bde475c65b7940f290efe80e6a05878c4/eigen-386d809bde475c65b7940f290efe80e6a05878c4.tar.gz",
+        ],
+    )
+```
+
+```bash
+$ nano tensorflow/third_party/ruy/workspace.bzl
+
+def repo():
+    third_party_http_archive(
+        name = "ruy",
+        sha256 = "8fd4adeeff4f29796bf7cdda64806ec0495a2435361569f02afe3fe33406f07c",
+        strip_prefix = "ruy-34ea9f4993955fa1ff4eb58e504421806b7f2e8f",
+        urls = [
+            "https://storage.googleapis.com/mirror.tensorflow.org/github.com/google/ruy/archive/34ea9f4993955fa1ff4eb58e504421806b7f2e8f.zip",
+            "https://github.com/google/ruy/archive/34ea9f4993955fa1ff4eb58e504421806b7f2e8f.zip",
+        ],
+        build_file = "//third_party/ruy:BUILD",
+    )
+
+↓
+
+def repo():
+    third_party_http_archive(
+        name = "ruy",
+        sha256 = "89b8b56b4e1db894e75a0abed8f69757b37c23dde6e64bfb186656197771138a",
+        strip_prefix = "ruy-388ffd28ba00ffb9aacbe538225165c02ea33ee3",
+        urls = [
+            "https://storage.googleapis.com/mirror.tensorflow.org/github.com/google/ruy/archive/388ffd28ba00ffb9aacbe538225165c02ea33ee3.zip",
+            "https://github.com/google/ruy/archive/388ffd28ba00ffb9aacbe538225165c02ea33ee3.zip",
+        ],
+        build_file = "//third_party/ruy:BUILD",
+    )
+```
+
+```bash
+$ sudo bazel --host_jvm_args=-Xmx512m build \
+--config=monolithic \
+--config=noaws \
+--config=nohdfs \
+--config=nonccl \
+--config=v2 \
+--local_ram_resources=4096 \
+--local_cpu_resources=2 \
+--copt=-mfpu=neon-vfpv4 \
+--copt=-ftree-vectorize \
+--copt=-funsafe-math-optimizations \
+--copt=-ftree-loop-vectorize \
+--copt=-fomit-frame-pointer \
+--copt=-DRASPBERRY_PI \
+--host_copt=-DRASPBERRY_PI \
+--linkopt=-Wl,-latomic \
+--host_linkopt=-Wl,-latomic \
+--define=tensorflow_mkldnn_contraction_kernel=0 \
+--define=raspberry_pi_with_neon=true \
+--define=tflite_pip_with_flex=true \
+//tensorflow/tools/pip_package:build_pip_package
+```
+
+============================================================  
+  
+**Tensorflow v2.3.0-rc0 - Debian Buster aarch64 - Bazel 3.1.0**  
+
+============================================================  
+
+```bash
+$ sudo bazel build \
+--config=monolithic \
+--config=noaws \
+--config=nohdfs \
+--config=nonccl \
+--config=v2 \
+--define=tflite_pip_with_flex=true \
+--define=tflite_with_xnnpack=true \
+--local_ram_resources=30720 \
+--local_cpu_resources=10 \
+//tensorflow/tools/pip_package:build_pip_package
+```
+
+</div></details>
+
 ## Reference articles
 - **[64-bit OS image creation repository for RaspberryPi3/4](https://github.com/drtyhlpr/rpi23-gen-image.git)**
+
 - **[How to install Ubuntu 18.04 aarch64 (64bit) on RaspberryPi3](https://qiita.com/PINTO/items/4f3bca0629bc41f22b83)**
+
+- **[[Japanese ver.] [Tensorflow Lite] Various Neural Network Model quantization methods for Tensorflow Lite (Weight Quantization, Integer Quantization, Full Integer Quantization, Float16 Quantization, EdgeTPU). As of May 05, 2020.](https://qiita.com/PINTO/items/008c54536fca690e0572)**
+
+- **[[English ver.] [Tensorflow Lite] Various Neural Network Model quantization methods for Tensorflow Lite (Weight Quantization, Integer Quantization, Full Integer Quantization, Float16 Quantization, EdgeTPU). As of May 05, 2020.](https://qiita.com/PINTO/items/865250ee23a15339d556)**
