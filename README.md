@@ -61,9 +61,9 @@ Prebuilt binary for Jetson Nano by **`Michael`**.
 \*4T = 4 Threads, \*\*FD = FlexDelegate, \*\*\*XP = XNNPACK
 |.whl|4T|FD|XP|Note|
 |:--|:--:|:--:|:--:|:--|
-|tensorflow-2.3.0-cp37-none-linux_armv7l.whl|○|○|○|Raspbian/Debian Buster, glibc 2.28|
-|tensorflow-2.3.0-cp37-cp37m-linux_aarch64.whl|○|○|○|RaspberryPiOS/Debian Buster, glibc 2.28|
-|tensorflow-2.3.0-cp38-none-linux_aarch64.whl|○|○|○|Ubuntu 20.04 Focal, glibc 2.31|
+|tensorflow-2.3.1-cp37-none-linux_armv7l.whl|○|○|○|Raspbian/Debian Buster, glibc 2.28|
+|tensorflow-2.3.1-cp37-cp37m-linux_aarch64.whl|○|○|○|RaspberryPiOS/Debian Buster, glibc 2.28|
+|tensorflow-2.3.1-cp38-none-linux_aarch64.whl|○|○|○|Ubuntu 20.04 Focal, glibc 2.31|
 
 **【Appendix】 C Library + Tensorflow v1.x.x / v2.x.x**  
 The behavior is unconfirmed because I do not have C language implementation skills.  
@@ -96,7 +96,8 @@ $ sudo pip3 install h5py==2.9.0
 $ sudo pip3 install pybind11
 $ pip3 install -U --user six wheel mock
 $ sudo pip3 uninstall tensorflow
-$ wget https://github.com/PINTO0309/Tensorflow-bin/raw/master/tensorflow-1.15.0-cp37-cp37m-linux_armv7l.whl
+$ wget "https://raw.githubusercontent.com/PINTO0309/Tensorflow-bin/master/tensorflow-1.15.0-cp37-cp37m-linux_armv7l_download.sh"
+$ ./tensorflow-1.15.0-cp37-cp37m-linux_armv7l_download.sh
 $ sudo pip3 install tensorflow-1.15.0-cp37-cp37m-linux_armv7l.whl
 
 【Required】 Restart the terminal.
@@ -111,10 +112,10 @@ $ sudo pip3 install keras_preprocessing==1.1.0 --no-deps
 $ sudo pip3 install h5py==2.9.0
 $ sudo pip3 install pybind11
 $ pip3 install -U --user six wheel mock
-$ wget "https://raw.githubusercontent.com/PINTO0309/Tensorflow-bin/master/tensorflow-2.3.0-cp37-none-linux_armv7l_download.sh"
-$ ./tensorflow-2.3.0-cp37-none-linux_armv7l_download.sh
+$ wget "https://raw.githubusercontent.com/PINTO0309/Tensorflow-bin/master/tensorflow-2.3.1-cp37-none-linux_armv7l_download.sh"
+$ ./tensorflow-2.3.1-cp37-none-linux_armv7l_download.sh
 $ sudo pip3 uninstall tensorflow
-$ sudo -H pip3 install tensorflow-2.3.0-cp37-none-linux_armv7l.whl
+$ sudo -H pip3 install tensorflow-2.3.1-cp37-none-linux_armv7l.whl
 
 【Required】 Restart the terminal.
 ```
